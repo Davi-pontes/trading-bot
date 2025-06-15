@@ -1,7 +1,7 @@
 import express, { Application } from "express";
 import { createServer, Server as HttpServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
-import { handleBuy } from "./service/handleBuy";
+import { Trading } from "./service/trading";
 
 class App {
     public readonly app: Application;
@@ -37,13 +37,16 @@ class App {
     private sockets(): void {
         this.io.on("connection", (socket) => {
             console.log("Novo cliente conectado:", socket.id);
-
+            const client = new Trading()
+            
             socket.on("disconnect", () => {
                 console.log("Cliente desconectado:", socket.id);
+                client.disconnect()
             });
-            socket.on("buy", () => {
-                handleBuy()
-            })
+            socket.emit('lastPriceBtcUsd')
+            // socket.on("boot", () => {
+            //     client.lastPrice()
+            // })
         });
     }
 }
