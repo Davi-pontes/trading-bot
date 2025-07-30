@@ -1,21 +1,33 @@
-interface IClient {
-  id: number;
-  name: string;
-  key: string;
+import { IAuthenticatedClient, IClientCredentials } from "@/interfaces/Client";
+import { createRestClient } from "@ln-markets/api";
 
-  connectionLnMarkets(): void;
-}
+export abstract class ClientService {
 
-export class ClientService implements IClient {
-  id: number;
-  name: string;
-  key: string;
-  constructor(id: number, name: string, key: string) {
-    this.id = id;
-    this.name = name;
-    this.key = key;
+  static async clientAuthentic(credentials: IClientCredentials): Promise<IAuthenticatedClient> {
+    try {
+      const client = await createRestClient(credentials);
+
+      return client;
+    } catch (error: any) {
+      console.error(error);
+      return error;
+    }
   }
-  connectionLnMarkets(): void {
-    throw new Error("Method not implemented.");
+  static async clientDraw(client:any){
+    try {
+      const userDraw = await client.userWithdraw();
+  
+      return userDraw
+      
+    } catch (error) {
+      console.log(error);
+    }
+  }
+   static getCredentialsClient() {
+    return {
+      key: "ESug78njAyd69Wy2fLtZAg9TqcECAvgCpbIA7Avvots=",
+      secret: "umyFMPXQ3b2vgcEX8OauFLzp2FGeSs4liJhJmpovjX+4s/52OXvoRbJTHFayZf3876DY1sW/hj8cTT+J5A2+3w==",
+      passphrase:"1b3a27370ibh7",
+    };
   }
 }

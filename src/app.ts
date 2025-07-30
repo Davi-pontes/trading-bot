@@ -1,54 +1,78 @@
 import express, { Application } from "express";
 import { createServer, Server as HttpServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
-import { Trading } from "./service/trading";
+import { PriceService } from "./service/priceService";
+import { RedisClientProvider } from "./config/redis";
+import { BroomService } from "./service/broomService";
+import { ValidationService } from "./service/validationServicec";
+import { IPrice } from "./interfaces/Price";
+import { RedisRepository } from "./repository/redisRepository";
+import { RedisService } from "./service/redisService";
+import { setupSocket } from "./sockets";
+export class App {
+  public readonly app: Application;
+  private readonly server: HttpServer;
+  private redisService!: RedisService;
 
-class App {
-    public readonly app: Application;
-    public server: HttpServer;
-    public io: SocketIOServer;
+  constructor() {
+    this.app = express();
+    this.server = createServer(this.app);
+  }
 
-    constructor() {
-        this.app = express();
-        this.server = createServer(this.app);
-        this.io = new SocketIOServer(this.server);
+  public async start(): Promise<void> {
+    await this.initialize();
+    this.listen();
+  }
 
-        this.middlewares();
-        this.routes();
-        this.sockets();
-        this.listen();
-    }
+  private async initialize(): Promise<void> {
+    this.setupMiddlewares();
+    this.setupRoutes();
+    this.setupSockets();
+    await this.setupRedis();
+   // await this.subscribeToLastPrice();
+  }
 
-    private middlewares(): void {
-        this.app.use(express.json());
-    }
+  private setupMiddlewares(): void {
+    this.app.use(express.json());
+  }
 
-    private routes(): void {
-        this.app.get("/", (req, res) => {
-            res.send("Servidor funcionando!");
-        });
-    }
-    private listen(): void {
-        this.server.listen(8100, () => {
-            console.log("Server running 8100");
+  private setupRoutes(): void {
+    this.app.get("/", (_, res) => {
+      res.send("Servidor funcionando!");
+    });
+  }
 
-        })
-    }
-    private sockets(): void {
-        this.io.on("connection", (socket) => {
-            console.log("Novo cliente conectado:", socket.id);
-            const client = new Trading()
-            
-            socket.on("disconnect", () => {
-                console.log("Cliente desconectado:", socket.id);
-                client.disconnect()
-            });
-            socket.emit('lastPriceBtcUsd')
-            // socket.on("boot", () => {
-            //     client.lastPrice()
-            // })
-        });
-    }
+  private setupSockets(): void {
+    const io = new SocketIOServer(this.server);
+    setupSocket(io);
+    console.log("✅ Socket Configured");
+  }
+
+  private listen(): void {
+    const port = 8100;
+    this.server.listen(port, () => {
+      console.log(`[App] Servidor rodando na porta ${port}`);
+    });
+  }
+
+  private async setupRedis(): Promise<void> {
+    const client = await RedisClientProvider.connect(
+      process.env.REDIS_URL || "redis://localhost:6379"
+    );
+    const repository = new RedisRepository(client);
+    this.redisService = new RedisService(repository);
+  }
+
+  private async subscribeToLastPrice(): Promise<void> {
+    const trading = await PriceService.connection();
+    
+    const broomService = new BroomService(this.redisService);
+    console.log("✅ Get last price completed.");
+    trading.lastPriceBtcUsd((data: IPrice) => {
+      ValidationService.validateHangingOrders(data, broomService);
+      // ValidationService.validatePreDefinition(data, this.redisService);
+    });
+  }
 }
 
 export default new App();
