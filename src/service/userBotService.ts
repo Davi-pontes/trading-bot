@@ -1,11 +1,11 @@
 import bcrypt from 'bcrypt';
 import {UserBotConfigRepository} from '../repository/userRepository'
-import {IUserBotConfigCreate,IUserBotConfigUpdate} from '../interfaces/UserBot'
+import {ICreateUserBot, IUserBotConfigCreate,IUserBotConfigUpdate} from '../interfaces/UserBot'
 
 const repository = new UserBotConfigRepository();
 
 export class UserBotConfigService {
-  async create(configData: IUserBotConfigCreate) {
+  async create(configData: ICreateUserBot) {
     const hashedPassword = await bcrypt.hash(configData.password, 10);
     return repository.create({
       ...configData,

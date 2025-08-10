@@ -20,6 +20,12 @@ export interface IUserBotConfigBase {
   evenPositive: number;
   evenNegative: number;
 }
+export interface ICreateUserBot {
+  name: string;
+  email: string;
+  password: string;
+  accessLevel?: AccessLevel;
+}
 
 export interface IUserBotConfig extends IUserBotConfigBase {
   id: number;

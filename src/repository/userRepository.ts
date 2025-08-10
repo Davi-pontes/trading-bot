@@ -1,10 +1,10 @@
-import { IUserBotConfigCreate, IUserBotConfigUpdate } from '@/interfaces/UserBot';
-import { PrismaClient, UserBotConfig } from '@prisma/client';
+import { ICreateUserBot, IUserBotConfigCreate, IUserBotConfigUpdate } from '@/interfaces/UserBot';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 export class UserBotConfigRepository {
-  async create(data: IUserBotConfigCreate) {
+  async create(data: ICreateUserBot) {
     return prisma.userBotConfig.create({ data });
   }
 

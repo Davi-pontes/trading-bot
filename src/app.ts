@@ -11,6 +11,7 @@ import { RedisService } from "./service/redisService";
 import { setupSocket } from "./sockets";
 import RabbitMQ from "./config/amqp";
 import { router } from "./routes";
+import {env} from "./config/env"
 
 export class App {
   public readonly app: Application;
@@ -36,7 +37,6 @@ export class App {
     await this.subscribeToLastPrice();
   }
 
-
   private setupMiddlewares(): void {
     this.app.use(express.json());
   }
@@ -52,7 +52,7 @@ export class App {
   }
 
   private listen(): void {
-    const port = 8100;
+    const port = env.PORT;
     this.server.listen(port, () => {
       console.log(`[App] Servidor rodando na porta ${port}`);
     });
