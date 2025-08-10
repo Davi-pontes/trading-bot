@@ -10,6 +10,8 @@ import { RedisRepository } from "./repository/redisRepository";
 import { RedisService } from "./service/redisService";
 import { setupSocket } from "./sockets";
 import RabbitMQ from "./config/amqp";
+import { router } from "./routes";
+
 export class App {
   public readonly app: Application;
   private readonly server: HttpServer;
@@ -40,9 +42,7 @@ export class App {
   }
 
   private setupRoutes(): void {
-    this.app.get("/", (_, res) => {
-      res.send("Servidor funcionando!");
-    });
+    this.app.use("/api/v1",router)
   }
 
   private setupSockets(): void {

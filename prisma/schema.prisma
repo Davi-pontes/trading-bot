@@ -4,12 +4,42 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
-generator client {
-  provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
+// schema.prisma
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum AccessLevel {
+  ADMIN
+  USER
+}
+
+model UserBotConfig {
+  id                 Int       @id @default(autoincrement())
+  name               String    @db.VarChar(100)
+  email              String    @unique @db.VarChar(150)
+  password           String    @db.VarChar(255)
+  key                String    @db.VarChar(255)
+  secret             String    @db.VarChar(255)
+  passphrase         String    @db.VarChar(255)
+  accessLevel        AccessLevel @default(USER)
+
+  riskThreshold      Int
+  amountForSetMargin Float
+  quantity           Int
+  variation          Int
+  leverage           Float
+  balance            Int
+  profitPercentage   Float
+  from               Float
+  evenPositive       Float
+  evenNegative       Float
+
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 }

@@ -1,4 +1,3 @@
-// redis.service.ts
 import {
   ETradingStatus,
   INewTrade,
