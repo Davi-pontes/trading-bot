@@ -1,33 +1,42 @@
 import { RedisClientProvider } from "@/config/redis";
-import { INewTrade } from "@/interfaces/Trading";
+import { ETradingStatus, INewTrade, IPreDefinition } from "@/interfaces/Trading";
 import { RedisRepository } from "@/repository/redisRepository";
-import { ClientService } from "@/service/clientService";
 import { RedisService } from "@/service/redisService";
 import { TradingService } from "@/service/tradingService";
 import { Socket } from "socket.io";
 
 export function registerTradeHandlers(socket: Socket) {
-  socket.on("futureNewTradeBuy", async (trade: INewTrade) => {
+  socket.on("futureNewTradeBuyMarket", async (trade: INewTrade) => {
     console.log("Compra de trade recebida:", trade);
-    if (trade.type === "m") {
-      const credentials = ClientService.getCredentialsClient();
+    const clientRedis = RedisClientProvider.getClient()
+    const repository = new RedisRepository(clientRedis);
+    const redisService = new RedisService(repository);
 
-      const client = await ClientService.clientAuthentic(credentials);
+    const tradingService = new TradingService();
 
-      const tradingService = new TradingService(client);
+    tradingService.createBuyTradeMarked(trade,redisService);
+  });
+  socket.on("futureNewTradeBuyLimit", async (trade: INewTrade) => {
+    console.log("Compra de trade recebida:", trade);
+    const redisClient = RedisClientProvider.getClient();
 
-      tradingService.createBuyTrade(trade);
-    } else {
-      const redisClient = RedisClientProvider.getClient();
+    const repository = new RedisRepository(redisClient);
 
-      const repository = new RedisRepository(redisClient);
+    const service = new RedisService(repository);
 
-      const service = new RedisService(repository);
-
-      await service.saveTrade(trade);
-    }
+    await service.saveTrade(trade, ETradingStatus.pending, trade.userId);
   });
 
+  socket.on("futureNewTradeRange", async (preDefinition: IPreDefinition) => {
+    console.log("Adicionando pré definition", preDefinition);
+    const redisClient = RedisClientProvider.getClient();
+
+    const repository = new RedisRepository(redisClient);
+
+    const service = new RedisService(repository);
+
+    await service.saveTradePredefinition(preDefinition)
+  });
   socket.on("futureNewTradeSell", async (trade: INewTrade) => {
     console.log("Venda de trade recebida:", trade);
   });

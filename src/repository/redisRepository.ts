@@ -34,4 +34,13 @@ export class RedisRepository {
     if (keys.length === 0) return [];
     return await this.client.mGet(keys);
   }
+  async saveMany(entries: { key: string; value: string }[]): Promise<void> {
+    if (!entries.length) return;
+
+    const multi = this.client.multi();
+    for (const { key, value } of entries) {
+      multi.set(key, value);
+    }
+    await multi.exec();
+  }
 }

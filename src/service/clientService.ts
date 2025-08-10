@@ -30,4 +30,10 @@ export abstract class ClientService {
       passphrase:"1b3a27370ibh7",
     };
   }
+  static getRiskThreshold(userId: string): number{
+    return 30
+  }
+  static getAmountForSetMargin(userId: string): number{
+    return 50
+  }
 }
