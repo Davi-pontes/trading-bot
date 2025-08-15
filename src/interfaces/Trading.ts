@@ -29,7 +29,7 @@ export interface ISetMargin {
   amount: number;
 }
 export interface BaseTrade {
-  userId: string;
+  userId: number;
   type: "l" | "m";
   side: "b" | "s";
   leverage: number;

@@ -1,8 +1,3 @@
-export interface IClientCredentials {
-  key: string;
-  passphrase: string;
-  secret: string;
-}
 export interface IAuthenticatedClient{
   request: Function
   futuresGetTicker: Function,

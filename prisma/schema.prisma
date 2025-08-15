@@ -20,14 +20,16 @@ enum AccessLevel {
 }
 
 model UserBotConfig {
-  id                 Int       @id @default(autoincrement())
-  name               String    @db.VarChar(100)
-  email              String    @unique @db.VarChar(150)
-  password           String    @db.VarChar(255)
-  key                String?   @db.VarChar(255)
-  secret             String?   @db.VarChar(255)
-  passphrase         String?   @db.VarChar(255)
-  accessLevel        AccessLevel @default(USER)
+  id                          Int       @id @default(autoincrement())
+  name                        String    @db.VarChar(100)
+  email                       String    @unique @db.VarChar(150)
+  password                    String    @db.VarChar(255)
+  key                         String?   @db.VarChar(255)
+  secret                      String?   @db.VarChar(255)
+  passphrase                  String?   @db.VarChar(255)
+  accessLevel                 AccessLevel @default(USER)
+  accountBalance              Float?
+  availableAccountBalance     Float?
 
   riskThreshold      Int?
   amountForSetMargin Float?

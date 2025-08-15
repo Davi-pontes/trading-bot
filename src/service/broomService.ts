@@ -13,10 +13,10 @@ export class BroomService {
   async getPreDefinitions(price: number): Promise<IPreDefinition[]> {
     return await this.redisService.getPreDefinitionTrades(price);
   }
-  async updateOrderStatus(trade: INewTrade | IOpenTrade, oldStatus: ETradingStatus, newStatus: ETradingStatus, userId: string): Promise<void>{
+  async updateOrderStatus(trade: INewTrade | IOpenTrade, oldStatus: ETradingStatus, newStatus: ETradingStatus, userId: number): Promise<void>{
     return await this.redisService.updateTradeStatus(trade,oldStatus, newStatus,userId)
   }
-  async updateOrder(trade: INewTrade | IOpenTrade, oldStatus: ETradingStatus, newStatus: ETradingStatus, userId: string): Promise<void>{
+  async updateOrder(trade: INewTrade | IOpenTrade, oldStatus: ETradingStatus, newStatus: ETradingStatus, userId: number): Promise<void>{
     return await this.redisService.updateTrade(trade,oldStatus, newStatus,userId)
   }
   async saveManyTrades(trade: INewTrade[]): Promise<void>{

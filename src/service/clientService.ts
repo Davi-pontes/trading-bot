@@ -1,9 +1,10 @@
-import { IAuthenticatedClient, IClientCredentials } from "@/interfaces/Client";
+import { IAuthenticatedClient } from "@/interfaces/Client";
+import { IUserCredentials } from "@/interfaces/UserBot";
 import { createRestClient } from "@ln-markets/api";
 
 export abstract class ClientService {
 
-  static async clientAuthentic(credentials: IClientCredentials): Promise<IAuthenticatedClient> {
+  static async clientAuthentic(credentials: IUserCredentials): Promise<IAuthenticatedClient> {
     try {
       const client = await createRestClient(credentials);
 

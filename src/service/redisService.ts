@@ -12,7 +12,7 @@ export class RedisService {
   async saveTrade(
     trade: INewTrade | IOpenTrade,
     status: ETradingStatus,
-    userId: string
+    userId: number
   ): Promise<void> {
     const key = `${trade.price}:${status}:${trade.side}:${userId}`;
     const value = JSON.stringify(trade);
@@ -134,7 +134,7 @@ export class RedisService {
     trade: INewTrade | IOpenTrade,
     oldStatus: ETradingStatus,
     newStatus: ETradingStatus,
-    userId: string
+    userId: number
   ): Promise<void> {
     const oldKey = `${trade.price}:${oldStatus}:${trade.side}:${userId}`;
     const newKey = `${trade.price}:${newStatus}:${trade.side}:${userId}`;
@@ -152,7 +152,7 @@ export class RedisService {
     trade: INewTrade | IOpenTrade,
     oldStatus: ETradingStatus,
     newStatus: ETradingStatus,
-    userId: string
+    userId: number
   ): Promise<void> {
     const oldKey = `${trade.price}:${oldStatus}:${trade.side}:${userId}`;
     const newKey = `${trade.price}:${newStatus}:${trade.side}:${userId}`;

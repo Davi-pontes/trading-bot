@@ -34,7 +34,7 @@ export class App {
     this.setupSockets();
     await this.setupRedis();
     await this.setupRabbitmq();
-    await this.subscribeToLastPrice();
+    //await this.subscribeToLastPrice();
   }
 
   private setupMiddlewares(): void {
