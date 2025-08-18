@@ -1,4 +1,4 @@
-export type AccessLevel = "ADMIN" | "USER";
+export type AccessLevel = 'ADMIN' | 'USER';
 
 export interface IUserBotConfigBase {
   name: string;
@@ -55,7 +55,10 @@ export interface IUserCredentials {
   secret: string;
   passphrase: string;
 }
-
+export interface IUserAccountBalance{
+  accountBalance: number
+  availableAccountBalance: number
+}
 export type IUserBotConfigCreate = IUserBotConfigBase;
 
 export type IUserBotConfigUpdate = Partial<IUserBotConfigBase>;

@@ -1,11 +1,13 @@
-import bcrypt from "bcrypt";
-import { UserBotConfigRepository } from "../repository/userRepository";
+import bcrypt from 'bcrypt';
+import { UserBotConfigRepository } from '../repository/userRepository';
 import {
   ICreateUserBot,
+  IUserAccountBalance,
   IUserBotConfigCreate,
   IUserBotConfigUpdate,
   IUserSettingsTrading,
-} from "../interfaces/UserBot";
+} from '../interfaces/UserBot';
+import { Calculate } from './calculate';
 
 const repository = new UserBotConfigRepository();
 
@@ -15,7 +17,7 @@ export class UserBotConfigService {
     return repository.create({
       ...configData,
       password: hashedPassword,
-      accessLevel: configData.accessLevel || "USER",
+      accessLevel: configData.accessLevel || 'USER',
     });
   }
 
@@ -25,14 +27,14 @@ export class UserBotConfigService {
 
   async getById(id: number): Promise<ICreateUserBot> {
     const config = await repository.findByUserId(id);
-    if (!config) throw new Error("Configuração não encontrada");
+    if (!config) throw new Error('Configuração não encontrada');
     return config;
   }
 
   async getTradingSettingsByUserId(userId: number): Promise<IUserSettingsTrading> {
     const credentials = await repository.findTradingSettingsByUserId(userId);
 
-    if (!credentials) throw new Error("Credenciais não encontrada");
+    if (!credentials) throw new Error('Credenciais não encontrada');
 
     return credentials;
   }
@@ -42,15 +44,34 @@ export class UserBotConfigService {
     }
     return repository.update(id, data);
   }
-  async decrementAvailableAccountBalance(balanceOld: any, decrement:number, userId:number): Promise<any>{
-    const newAvailableAccountBalance = balanceOld - decrement
-
-    return await repository.updateAvailableAccountBalance(newAvailableAccountBalance,userId)
+  async decrementAccountBalance(
+    balanceOld: IUserAccountBalance,
+    decrement: number,
+    userId: number,
+  ) {
+    const decrementedValues = {
+      accountBalance: Calculate.calculateDecrementNumber(balanceOld.accountBalance, decrement),
+      availableAccountBalance: Calculate.calculateDecrementNumber(
+        balanceOld.availableAccountBalance,
+        decrement,
+      ),
+    };
+    return await repository.updateAccountBalance(decrementedValues, userId);
   }
-  async incrementAvailableAccountBalance(balanceOld: number, decrement:number, userId:number): Promise<any>{
-    const newAvailableAccountBalance = balanceOld + decrement
+  async incrementAvailableAccountBalance(
+    balanceOld: IUserAccountBalance,
+    decrement: number,
+    userId: number,
+  ): Promise<any> {
+    const incrementedValues = {
+      accountBalance: Calculate.calculateIncrementNumber(balanceOld.accountBalance, decrement),
+      availableAccountBalance: Calculate.calculateIncrementNumber(
+        balanceOld.availableAccountBalance,
+        decrement,
+      ),
+    };
 
-    return await repository.updateAvailableAccountBalance(newAvailableAccountBalance,userId)
+    return await repository.updateAccountBalance(incrementedValues, userId);
   }
   async delete(id: number) {
     return repository.delete(id);

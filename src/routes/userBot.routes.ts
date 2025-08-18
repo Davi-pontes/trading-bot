@@ -1,7 +1,7 @@
-import {Router} from 'express'
-import {UserBotConfigController} from '../controller/userBotController'
+import { Router } from 'express';
+import { UserBotConfigController } from '../controller/userBotController';
 
-const router = Router()
+const router = Router();
 
 const controller = new UserBotConfigController();
 
@@ -11,5 +11,4 @@ router.get('/:id', controller.getById.bind(controller));
 router.put('/:id', controller.update.bind(controller));
 router.delete('/:id', controller.delete.bind(controller));
 
-
-export {router as UserRouter};
+export { router as UserRouter };

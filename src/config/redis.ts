@@ -1,4 +1,4 @@
-import { createClient, RedisClientType } from "redis";
+import { createClient, RedisClientType } from 'redis';
 
 export abstract class RedisClientProvider {
   private static client: RedisClientType | null = null;
@@ -10,12 +10,12 @@ export abstract class RedisClientProvider {
     try {
       this.client = createClient({ url: url });
 
-      this.client.on("error", (err) => {
-        console.error("Redis Client Error:", err);
+      this.client.on('error', (err) => {
+        console.error('Redis Client Error:', err);
       });
 
       await this.client.connect();
-      console.log("✅ Redis connected");
+      console.log('✅ Redis connected');
 
       return this.client;
     } catch (error: any) {
@@ -25,7 +25,7 @@ export abstract class RedisClientProvider {
 
   static getClient(): RedisClientType {
     if (!this.client || !this.client.isOpen) {
-      throw new Error("Redis client is not connected. Call connect() first.");
+      throw new Error('Redis client is not connected. Call connect() first.');
     }
     return this.client;
   }

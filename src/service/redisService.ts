@@ -1,10 +1,5 @@
-import {
-  ETradingStatus,
-  INewTrade,
-  IOpenTrade,
-  IPreDefinition,
-} from "@/interfaces/Trading";
-import { RedisRepository } from "../repository/redisRepository";
+import { ETradingStatus, INewTrade, IOpenTrade, IPreDefinition } from '@/interfaces/Trading';
+import { RedisRepository } from '../repository/redisRepository';
 
 export class RedisService {
   constructor(private repository: RedisRepository) {}
@@ -12,23 +7,20 @@ export class RedisService {
   async saveTrade(
     trade: INewTrade | IOpenTrade,
     status: ETradingStatus,
-    userId: number
+    userId: number,
   ): Promise<void> {
     const key = `${trade.price}:${status}:${trade.side}:${userId}`;
     const value = JSON.stringify(trade);
     await this.repository.set(key, value);
   }
   async saveTradePredefinition(preDefinitiion: IPreDefinition): Promise<void> {
-    const key = `${"predefinition"}:${preDefinitiion.from}:${
+    const key = `${'predefinition'}:${preDefinitiion.from}:${
       preDefinitiion.side
     }:${preDefinitiion.userId}`;
     const value = JSON.stringify(preDefinitiion);
     await this.repository.set(key, value);
   }
-  async saveManyTrades(
-    trades: INewTrade[],
-    status: string = "pending"
-  ): Promise<void> {
+  async saveManyTrades(trades: INewTrade[], status: string = 'pending'): Promise<void> {
     if (!trades.length) return;
 
     const entries = trades.map((trade) => ({
@@ -38,10 +30,7 @@ export class RedisService {
 
     await this.repository.saveMany(entries);
   }
-  async getTradesByPrice(
-    price: number,
-    range: number = 20
-  ): Promise<INewTrade[]> {
+  async getTradesByPrice(price: number, range: number = 20): Promise<INewTrade[]> {
     try {
       const min = price - range;
       const max = price + range;
@@ -56,7 +45,7 @@ export class RedisService {
         const values = await this.repository.mGet(keys);
 
         const parsed = values
-          .filter((val): val is string => typeof val === "string")
+          .filter((val): val is string => typeof val === 'string')
           .map((val) => JSON.parse(val));
 
         allValues.push(...parsed);
@@ -79,31 +68,26 @@ export class RedisService {
 
       const parsed: IOpenTrade[] = values
         .map((val, index) => {
-          if (typeof val !== "string") return null;
+          if (typeof val !== 'string') return null;
 
           try {
             const trade = JSON.parse(val) as IOpenTrade;
-            const userId = keys[index].split(":")[3];
+            const userId = keys[index].split(':')[3];
             return { ...trade, userId };
           } catch (error) {
-            console.warn("Valor inválido no Redis:", val);
+            console.warn('Valor inválido no Redis:', val);
             return null;
           }
         })
-        .filter(
-          (item): item is IOpenTrade & { userId: string } => item !== null
-        );
+        .filter((item): item is IOpenTrade & { userId: string } => item !== null);
 
       return parsed;
     } catch (error) {
-      console.error("Erro ao buscar ordens abertas:", error);
+      console.error('Erro ao buscar ordens abertas:', error);
       return [];
     }
   }
-  async getPreDefinitionTrades(
-    price: number,
-    range: number = 100
-  ): Promise<IPreDefinition[]> {
+  async getPreDefinitionTrades(price: number, range: number = 100): Promise<IPreDefinition[]> {
     try {
       const min = price - range;
       const max = price + range;
@@ -118,7 +102,7 @@ export class RedisService {
         const values = await this.repository.mGet(keys);
 
         const parsed = values
-          .filter((val): val is string => typeof val === "string")
+          .filter((val): val is string => typeof val === 'string')
           .map((val) => JSON.parse(val));
 
         allValues.push(...parsed);
@@ -134,7 +118,7 @@ export class RedisService {
     trade: INewTrade | IOpenTrade,
     oldStatus: ETradingStatus,
     newStatus: ETradingStatus,
-    userId: number
+    userId: number,
   ): Promise<void> {
     const oldKey = `${trade.price}:${oldStatus}:${trade.side}:${userId}`;
     const newKey = `${trade.price}:${newStatus}:${trade.side}:${userId}`;
@@ -152,11 +136,11 @@ export class RedisService {
     trade: INewTrade | IOpenTrade,
     oldStatus: ETradingStatus,
     newStatus: ETradingStatus,
-    userId: number
+    userId: number,
   ): Promise<void> {
     const oldKey = `${trade.price}:${oldStatus}:${trade.side}:${userId}`;
     const newKey = `${trade.price}:${newStatus}:${trade.side}:${userId}`;
-    
+
     const value = JSON.stringify(trade);
 
     await this.repository.set(newKey, value);

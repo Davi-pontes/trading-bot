@@ -1,17 +1,17 @@
-import express, { Application } from "express";
-import { createServer, Server as HttpServer } from "http";
-import { Server as SocketIOServer } from "socket.io";
-import { PriceService } from "./service/priceService";
-import { RedisClientProvider } from "./config/redis";
-import { BroomService } from "./service/broomService";
-import { MonitorService } from "./service/monitorServicec";
-import { IPrice } from "./interfaces/Price";
-import { RedisRepository } from "./repository/redisRepository";
-import { RedisService } from "./service/redisService";
-import { setupSocket } from "./sockets";
-import RabbitMQ from "./config/amqp";
-import { router } from "./routes";
-import {env} from "./config/env"
+import express, { Application } from 'express';
+import { createServer, Server as HttpServer } from 'http';
+import { Server as SocketIOServer } from 'socket.io';
+import { PriceService } from './service/priceService';
+import { RedisClientProvider } from './config/redis';
+import { BroomService } from './service/broomService';
+import { MonitorService } from './service/monitorServicec';
+import { IPrice } from './interfaces/Price';
+import { RedisRepository } from './repository/redisRepository';
+import { RedisService } from './service/redisService';
+import { setupSocket } from './sockets';
+import RabbitMQ from './config/amqp';
+import { router } from './routes';
+import { env } from './config/env';
 
 export class App {
   public readonly app: Application;
@@ -34,6 +34,7 @@ export class App {
     this.setupSockets();
     await this.setupRedis();
     await this.setupRabbitmq();
+    await this.subscribeToLastPriceTeste()
     //await this.subscribeToLastPrice();
   }
 
@@ -42,13 +43,13 @@ export class App {
   }
 
   private setupRoutes(): void {
-    this.app.use("/api/v1",router)
+    this.app.use('/api/v1', router);
   }
 
   private setupSockets(): void {
     const io = new SocketIOServer(this.server);
     setupSocket(io);
-    console.log("✅ Socket Configured");
+    console.log('✅ Socket Configured');
   }
 
   private listen(): void {
@@ -60,7 +61,7 @@ export class App {
 
   private async setupRedis(): Promise<void> {
     const client = await RedisClientProvider.connect(
-      process.env.REDIS_URL || "redis://localhost:6379"
+      process.env.REDIS_URL || 'redis://localhost:6379',
     );
     const repository = new RedisRepository(client);
     this.redisService = new RedisService(repository);
@@ -70,44 +71,52 @@ export class App {
 
     const channel = RabbitMQ.getChannel();
 
-    const queue = "last-price-lnm-btcusd";
+    const queue = 'last-price-lnm-btcusd';
 
     await channel.assertQueue(queue, { durable: true });
+  }
+
+  private async subscribeToLastPriceTeste(): Promise<void> {
+    const broomService = new BroomService(this.redisService);
+    const data = {
+      lastPrice: 114000,
+      lastTickDirection: '',
+      time: 'string',
+    };
+
+    await MonitorService.monitorHangingOrders(data, broomService);
   }
 
   private async subscribeToLastPrice(): Promise<void> {
     const trading = await PriceService.connection();
 
     const broomService = new BroomService(this.redisService);
-    console.log("✅ Get last price completed.");
-    
+    console.log('✅ Get last price completed.');
+
     const channel = RabbitMQ.getChannel();
-    
+
     trading.lastPriceBtcUsd((data: IPrice) => {
-      channel.sendToQueue(
-        "last-price-lnm-btcusd",
-        Buffer.from(JSON.stringify(data))
-      );
+      channel.sendToQueue('last-price-lnm-btcusd', Buffer.from(JSON.stringify(data)));
     });
-    await channel.prefetch(1)
-    
+    await channel.prefetch(1);
+
     channel.consume(
-      "last-price-lnm-btcusd",
+      'last-price-lnm-btcusd',
       async (msg) => {
         if (msg) {
           try {
             const data = JSON.parse(msg.content.toString());
             await MonitorService.monitorHangingOrders(data, broomService);
-            await MonitorService.monitorPreDefinition(data,broomService);
-            await MonitorService.monitorMarginProtection(data,broomService);
+            await MonitorService.monitorPreDefinition(data, broomService);
+            await MonitorService.monitorMarginProtection(data, broomService);
             channel.ack(msg);
           } catch (err) {
-            console.error("Erro no processamento da mensagem", err);
+            console.error('Erro no processamento da mensagem', err);
             channel.nack(msg, false, true);
           }
         }
       },
-      { noAck: false }
+      { noAck: false },
     );
   }
 }

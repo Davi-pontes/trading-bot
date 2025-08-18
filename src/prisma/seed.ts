@@ -1,6 +1,6 @@
-import { env } from "@/config/env";
-import { UserBotConfigService } from "@/service/userBotService";
-import { PrismaClient } from "@prisma/client";
+import { env } from '@/config/env';
+import { UserBotConfigService } from '@/service/userBotService';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 const userService = new UserBotConfigService();
@@ -11,22 +11,22 @@ async function main() {
   const defaultPassword = env.PASSWORD_ADMIN;
 
   const existingUser = await prisma.userBotConfig.findUnique({
-    where: { email: defaultEmail }
+    where: { email: defaultEmail },
   });
 
   if (!existingUser) {
-    console.log("Nenhum usuário encontrado. Criando usuário inicial...");
+    console.log('Nenhum usuário encontrado. Criando usuário inicial...');
 
     await userService.create({
-      name: "Administrador",
+      name: 'Administrador',
       email: defaultEmail,
       password: defaultPassword,
-      accessLevel: "ADMIN"
+      accessLevel: 'ADMIN',
     });
 
-    console.log("Usuário inicial criado com sucesso!");
+    console.log('Usuário inicial criado com sucesso!');
   } else {
-    console.log("Usuário inicial já existe. Nenhuma ação necessária.");
+    console.log('Usuário inicial já existe. Nenhuma ação necessária.');
   }
 }
 

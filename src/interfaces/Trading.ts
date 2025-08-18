@@ -14,14 +14,14 @@ export interface ILastPriceBtcUsd {
 }
 
 export enum ETradingStatus {
-  open = "open",
-  running = "running",
-  closed = "closed",
-  pending = "pending",
+  open = 'open',
+  running = 'running',
+  closed = 'closed',
+  pending = 'pending',
 }
 export interface IUpdateTrade {
   id: string;
-  type: "stoploss" | "takeprofit";
+  type: 'stoploss' | 'takeprofit';
   value: number;
 }
 export interface ISetMargin {
@@ -30,8 +30,8 @@ export interface ISetMargin {
 }
 export interface BaseTrade {
   userId: number;
-  type: "l" | "m";
-  side: "b" | "s";
+  type: 'l' | 'm';
+  side: 'b' | 's';
   leverage: number;
   price: number;
 }
@@ -41,11 +41,11 @@ export type INewTrade =
   | (BaseTrade & { quantity: number; margin?: never });
 
 export interface IOpenTrade {
-  userId?: string;
+  userId?: number;
   id: string;
   uid: string;
-  type: "l" | "m";
-  side: "b" | "s";
+  type: 'l' | 'm';
+  side: 'b' | 's';
   opening_fee: number;
   closing_fee: number;
   maintenance_margin: number;
@@ -71,9 +71,9 @@ export interface IOpenTrade {
 }
 
 export interface IPreDefinition {
-  userId: string;
+  userId: number;
   quantity: number;
-  side: "b" | "s";
+  side: 'b' | 's';
   variation: number;
   leverage: number;
   balance: number;

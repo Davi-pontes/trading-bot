@@ -1,9 +1,8 @@
-import { IAuthenticatedClient } from "@/interfaces/Client";
-import { IUserCredentials } from "@/interfaces/UserBot";
-import { createRestClient } from "@ln-markets/api";
+import { IAuthenticatedClient } from '@/interfaces/Client';
+import { IUserCredentials } from '@/interfaces/UserBot';
+import { createRestClient } from '@ln-markets/api';
 
 export abstract class ClientService {
-
   static async clientAuthentic(credentials: IUserCredentials): Promise<IAuthenticatedClient> {
     try {
       const client = await createRestClient(credentials);
@@ -14,27 +13,27 @@ export abstract class ClientService {
       return error;
     }
   }
-  static async clientDraw(client:any){
+  static async clientDraw(client: any) {
     try {
       const userDraw = await client.userWithdraw();
-  
-      return userDraw
-      
+
+      return userDraw;
     } catch (error) {
       console.log(error);
     }
   }
-   static getCredentialsClient() {
+  static getCredentialsClient() {
     return {
-      key: "ESug78njAyd69Wy2fLtZAg9TqcECAvgCpbIA7Avvots=",
-      secret: "umyFMPXQ3b2vgcEX8OauFLzp2FGeSs4liJhJmpovjX+4s/52OXvoRbJTHFayZf3876DY1sW/hj8cTT+J5A2+3w==",
-      passphrase:"1b3a27370ibh7",
+      key: 'ESug78njAyd69Wy2fLtZAg9TqcECAvgCpbIA7Avvots=',
+      secret:
+        'umyFMPXQ3b2vgcEX8OauFLzp2FGeSs4liJhJmpovjX+4s/52OXvoRbJTHFayZf3876DY1sW/hj8cTT+J5A2+3w==',
+      passphrase: '1b3a27370ibh7',
     };
   }
-  static getRiskThreshold(userId: string): number{
-    return 30
+  static getRiskThreshold(userId: number): number {
+    return 30;
   }
-  static getAmountForSetMargin(userId: string): number{
-    return 50
+  static getAmountForSetMargin(userId: number): number {
+    return 50;
   }
 }

@@ -1,5 +1,5 @@
 // redis.repository.ts
-import { RedisClientType } from "redis";
+import { RedisClientType } from 'redis';
 
 export class RedisRepository {
   constructor(private client: RedisClientType) {}
@@ -14,7 +14,7 @@ export class RedisRepository {
     await this.client.del(key);
   }
   async scanKeys(pattern: string): Promise<string[]> {
-    let cursor = "0";
+    let cursor = '0';
     const keys: string[] = [];
 
     do {
@@ -25,7 +25,7 @@ export class RedisRepository {
 
       cursor = result.cursor;
       keys.push(...result.keys);
-    } while (cursor !== "0");
+    } while (cursor !== '0');
 
     return keys;
   }

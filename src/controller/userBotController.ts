@@ -1,5 +1,5 @@
-import {Request,Response} from 'express'
-import {UserBotConfigService} from '../service/userBotService'
+import { Request, Response } from 'express';
+import { UserBotConfigService } from '../service/userBotService';
 
 const service = new UserBotConfigService();
 

@@ -1,12 +1,8 @@
-import {
-  ILastPriceBtcUsd,
-  ILnMarketsWebSocketClient,
-} from "@/interfaces/Trading";
-import { createWebsocketClient } from "@ln-markets/api";
+import { ILastPriceBtcUsd, ILnMarketsWebSocketClient } from '@/interfaces/Trading';
+import { createWebsocketClient } from '@ln-markets/api';
 
-
-export class PriceService{
-    private client!: ILnMarketsWebSocketClient;
+export class PriceService {
+  private client!: ILnMarketsWebSocketClient;
 
   static async connection(): Promise<PriceService> {
     const instance = new PriceService();
@@ -23,27 +19,24 @@ export class PriceService{
     try {
       this.client = await createWebsocketClient();
     } catch (error) {
-      console.error("Erro ao conectar ao WebSocket:", error);
+      console.error('Erro ao conectar ao WebSocket:', error);
     }
   }
 
   private async subscribeChannels() {
     try {
-      await this.client.publicSubscribe([
-        "futures:btc_usd:last-price",
-        "futures:btc_usd:index",
-      ]);
+      await this.client.publicSubscribe(['futures:btc_usd:last-price', 'futures:btc_usd:index']);
     } catch (error) {
-      console.error("Erro ao inscrever nos canais:", error);
+      console.error('Erro ao inscrever nos canais:', error);
     }
   }
 
   lastPriceBtcUsd(callback: (data: ILastPriceBtcUsd) => void) {
-    this.client.ws.on("futures:btc_usd:last-price", callback);
+    this.client.ws.on('futures:btc_usd:last-price', callback);
   }
 
   lastPriceBtcUsdIndex() {
-    this.client.ws.on("futures:btc_usd:index", console.log);
+    this.client.ws.on('futures:btc_usd:index', console.log);
   }
 
   disconnect() {

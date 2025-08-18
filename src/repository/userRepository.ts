@@ -1,9 +1,5 @@
-import {
-  ICreateUserBot,
-  IUserBotConfigUpdate,
-  IUserSettingsTrading,
-} from "@/interfaces/UserBot";
-import { PrismaClient } from "@prisma/client";
+import { ICreateUserBot, IUserAccountBalance, IUserBotConfigUpdate, IUserSettingsTrading } from '@/interfaces/UserBot';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -16,9 +12,7 @@ export class UserBotConfigRepository {
     return prisma.userBotConfig.findMany();
   }
 
-  async findTradingSettingsByUserId(
-    userId: number
-  ): Promise<IUserSettingsTrading | null> {
+  async findTradingSettingsByUserId(userId: number): Promise<IUserSettingsTrading | null> {
     return prisma.userBotConfig.findUnique({
       select: {
         key: true,
@@ -58,11 +52,9 @@ export class UserBotConfigRepository {
     return prisma.userBotConfig.delete({ where: { id: userId } });
   }
 
-  async updateAvailableAccountBalance(value: number, userId: number) {
+  async updateAccountBalance(values: IUserAccountBalance, userId: number) {
     return prisma.userBotConfig.update({
-      data: {
-        availableAccountBalance: value,
-      },
+      data: values,
       where: {
         id: userId,
       },

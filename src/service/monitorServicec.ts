@@ -1,16 +1,16 @@
-import { IPrice } from "@/interfaces/Price";
-import { BroomService } from "./broomService";
-import { ETradingStatus, INewTrade, IOpenTrade } from "@/interfaces/Trading";
-import { TradingService } from "./tradingService";
-import { ClientService } from "./clientService";
-import { RedisClientProvider } from "@/config/redis";
-import { RedisRepository } from "@/repository/redisRepository";
-import { RedisService } from "./redisService";
+import { IPrice } from '@/interfaces/Price';
+import { BroomService } from './broomService';
+import { ETradingStatus, INewTrade, IOpenTrade } from '@/interfaces/Trading';
+import { TradingService } from './tradingService';
+import { ClientService } from './clientService';
+import { RedisClientProvider } from '@/config/redis';
+import { RedisRepository } from '@/repository/redisRepository';
+import { RedisService } from './redisService';
 
 export abstract class MonitorService {
   static async monitorHangingOrders(
     currentPrice: IPrice,
-    hangingOrderService: BroomService
+    hangingOrderService: BroomService,
   ): Promise<void> {
     try {
       const price = currentPrice.lastPrice;
@@ -22,15 +22,13 @@ export abstract class MonitorService {
 
       for (const order of orders) {
         console.log(
-          `Executando ${order.side === "b" ? "compra" : "venda"} para user ${
-            order.userId
-          }`
+          `Executando ${order.side === 'b' ? 'compra' : 'venda'} para user ${order.userId}`,
         );
         await hangingOrderService.updateOrderStatus(
           order,
           ETradingStatus.pending,
           ETradingStatus.running,
-          order.userId
+          order.userId,
         );
       }
 
@@ -38,7 +36,7 @@ export abstract class MonitorService {
 
       const tradexecutedTradeing = await tradingService.createBuyTradeLimit(
         orders,
-        hangingOrderService
+        hangingOrderService,
       );
 
       return tradexecutedTradeing;
@@ -46,13 +44,8 @@ export abstract class MonitorService {
       console.log(error);
     }
   }
-  static async monitorPreDefinition(
-    currentPrice: IPrice,
-    hangingOrderService: BroomService
-  ) {
-    const preDefinitions = await hangingOrderService.getPreDefinitions(
-      currentPrice.lastPrice
-    );
+  static async monitorPreDefinition(currentPrice: IPrice, hangingOrderService: BroomService) {
+    const preDefinitions = await hangingOrderService.getPreDefinitions(currentPrice.lastPrice);
 
     if (!preDefinitions.length) return;
     // Gera todas as ordens em memória
@@ -65,7 +58,7 @@ export abstract class MonitorService {
       ) {
         trades.push({
           userId: preDef.userId,
-          type: "l",
+          type: 'l',
           side: preDef.side,
           leverage: preDef.leverage,
           quantity: preDef.quantity,
@@ -78,10 +71,7 @@ export abstract class MonitorService {
     await hangingOrderService.deleteManyPredenitions(preDefinitions);
     return;
   }
-  static async monitorMarginProtection(
-    currentPrice: IPrice,
-    hangingOrderService: BroomService
-  ) {
+  static async monitorMarginProtection(currentPrice: IPrice, hangingOrderService: BroomService) {
     const allOrdersOpen = await hangingOrderService.getOpenOrders();
 
     if (!allOrdersOpen.length) return;
@@ -92,26 +82,17 @@ export abstract class MonitorService {
         const distancePrice = currentPrice.lastPrice - liquidationPrice;
         const riskThreshold = ClientService.getRiskThreshold(orderOpen.userId);
         if (distancePrice <= riskThreshold) {
-          console.log(
-            `⚠️ Ordem ${orderOpen.id} próxima de liquidação. Injetando margem...`
-          );
+          console.log(`⚠️ Ordem ${orderOpen.id} próxima de liquidação. Injetando margem...`);
           const tradingService = new TradingService();
           try {
-            const addedMargin = await tradingService.addMarginTrade(
-              orderOpen,
-              orderOpen.userId
-            );
+            const addedMargin = await tradingService.addMarginTrade(orderOpen, orderOpen.userId);
             const redisClient = RedisClientProvider.getClient();
 
             const repository = new RedisRepository(redisClient);
 
             const redisService = new RedisService(repository);
 
-            redisService.saveTrade(
-              addedMargin,
-              ETradingStatus.open,
-              orderOpen.userId
-            );
+            redisService.saveTrade(addedMargin, ETradingStatus.open, orderOpen.userId);
           } catch (error) {
             console.error(error);
           }

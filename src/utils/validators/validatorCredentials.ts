@@ -1,10 +1,10 @@
-import { IUserSettingsTrading } from "@/interfaces/UserBot";
-import { z } from "zod";
+import { IUserSettingsTrading } from '@/interfaces/UserBot';
+import { z } from 'zod';
 
 const credentialsSchema = z.object({
-  key: z.string().min(1, "Key é obrigatória"),
-  secret: z.string().min(1, "Secret é obrigatória"),
-  passphrase: z.string().min(1, "Passphrase é obrigatória")
+  key: z.string().min(1, 'Key é obrigatória'),
+  secret: z.string().min(1, 'Secret é obrigatória'),
+  passphrase: z.string().min(1, 'Passphrase é obrigatória'),
 });
 
 type TradingCredentials = z.infer<typeof credentialsSchema>;

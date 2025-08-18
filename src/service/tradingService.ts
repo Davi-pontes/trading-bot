@@ -1,28 +1,20 @@
-import {
-  ETradingStatus,
-  INewTrade,
-  IOpenTrade,
-  IUpdateTrade,
-} from "@/interfaces/Trading";
-import { ClientService } from "./clientService";
-import { TradingApiGateway } from "@/integration/tradingApiGateway";
-import { BroomService } from "./broomService";
-import { UserBotConfigService } from "./userBotService";
-import { validateCredentials } from "@/utils/validators/validatorCredentials";
-import { formatOrder } from "@/utils/formatters/orderFormatter";
-import { Calculate } from "./calculate";
+import { ETradingStatus, INewTrade, IOpenTrade, IUpdateTrade } from '@/interfaces/Trading';
+import { ClientService } from './clientService';
+import { TradingApiGateway } from '@/integration/tradingApiGateway';
+import { BroomService } from './broomService';
+import { UserBotConfigService } from './userBotService';
+import { validateCredentials } from '@/utils/validators/validatorCredentials';
+import { formatOrder } from '@/utils/formatters/orderFormatter';
+import { Calculate } from './calculate';
+import { validateavailableAccountBalance as validateAvailableAccountBalance } from '@/utils/validators/validatorBalance';
 
 export class TradingService {
-  public async createBuyTradeLimit(
-    dataOrders: INewTrade[],
-    hangingOrderService: BroomService
-  ) {
+  public async createBuyTradeLimit(dataOrders: INewTrade[], hangingOrderService: BroomService) {
     try {
       for (const order of dataOrders) {
         const userBotService = new UserBotConfigService();
 
-        const userSettingsTrading =
-          await userBotService.getTradingSettingsByUserId(order.userId);
+        const userSettingsTrading = await userBotService.getTradingSettingsByUserId(order.userId);
         if (userSettingsTrading) {
           const credentials = validateCredentials(userSettingsTrading);
 
@@ -31,29 +23,46 @@ export class TradingService {
 
             const takeprofit = this.calculateTakeProfit(
               order.price,
-              userSettingsTrading.profitPercentage
+              userSettingsTrading.profitPercentage,
             );
             const formatedOrder = formatOrder(order, takeprofit);
 
             const orderMargin = Calculate.calculateMargin(order);
-            try {
-              const createdOrder = await TradingApiGateway.futureNewTradeBuy(
-                client,
-                formatedOrder
-              );
-              console.log(createdOrder);
-              await userBotService.decrementAvailableAccountBalance(
-                userSettingsTrading.availableAccountBalance,
-                orderMargin.btc,
-                order.userId
-              );
-              await hangingOrderService.updateOrder(
-                createdOrder,
-                ETradingStatus.running,
-                ETradingStatus.open,
-                order.userId
-              );
-            } catch (error) {
+
+            const validateAvailableBalance = validateAvailableAccountBalance(
+              userSettingsTrading.accountBalance,
+              userSettingsTrading.availableAccountBalance,
+              orderMargin.usd,
+            );
+
+            if (validateAvailableBalance) {
+              try {
+                const createdOrder = await TradingApiGateway.futureNewTradeBuy(
+                  client,
+                  formatedOrder,
+                );
+                console.log(createdOrder);
+                const accountBalanceOld = {
+                  accountBalance: userSettingsTrading.accountBalance as number,
+                  availableAccountBalance: userSettingsTrading.availableAccountBalance as number,
+                };
+
+                await userBotService.decrementAccountBalance(
+                  accountBalanceOld,
+                  orderMargin.usd,
+                  order.userId,
+                );
+                await hangingOrderService.updateOrder(
+                  createdOrder,
+                  ETradingStatus.running,
+                  ETradingStatus.open,
+                  order.userId,
+                );
+              } catch (error) {
+                continue;
+              }
+            } else {
+              console.log('Saldo insuficiente.');
               continue;
             }
           }
@@ -110,10 +119,7 @@ export class TradingService {
   //     console.error(error);
   //   }
   // }
-  public async addMarginTrade(
-    datas: IOpenTrade,
-    userId: string
-  ): Promise<IOpenTrade> {
+  public async addMarginTrade(datas: IOpenTrade, userId: number): Promise<IOpenTrade> {
     try {
       const credential = ClientService.getCredentialsClient();
 
@@ -124,10 +130,7 @@ export class TradingService {
         id: datas.id,
         amount: amountSetMargin,
       };
-      const addedMargin = TradingApiGateway.futuresAddMarginTrade(
-        client,
-        dataOrderSetMargin
-      );
+      const addedMargin = TradingApiGateway.futuresAddMarginTrade(client, dataOrderSetMargin);
       console.log(addedMargin);
       return addedMargin;
     } catch (error: any) {
@@ -135,10 +138,7 @@ export class TradingService {
       return error;
     }
   }
-  private calculateTakeProfit(
-    price: number,
-    profitPercentage: number | null
-  ): number {
+  private calculateTakeProfit(price: number, profitPercentage: number | null): number {
     if (profitPercentage) {
       if (!price) return profitPercentage;
       const profit = price * (profitPercentage / 100);
