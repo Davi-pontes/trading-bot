@@ -77,7 +77,7 @@ export interface IPreDefinition {
   variation: number;
   leverage: number;
   balance: number;
-  winPercentage: number;
+  profitPercentage: number;
   from: number;
   evenPositive: number;
   evenNegative: number;

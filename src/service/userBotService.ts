@@ -3,6 +3,7 @@ import { UserBotConfigRepository } from '../repository/userRepository';
 import {
   ICreateUserBot,
   IUserAccountBalance,
+  IUserBorService,
   IUserBotConfigCreate,
   IUserBotConfigUpdate,
   IUserSettingsTrading,
@@ -11,7 +12,7 @@ import { Calculate } from './calculate';
 
 const repository = new UserBotConfigRepository();
 
-export class UserBotConfigService {
+export class UserBotConfigService implements IUserBorService {
   async create(configData: ICreateUserBot) {
     const hashedPassword = await bcrypt.hash(configData.password, 10);
     return repository.create({
@@ -37,6 +38,9 @@ export class UserBotConfigService {
     if (!credentials) throw new Error('Credenciais não encontrada');
 
     return credentials;
+  }
+  async getPredefinitions(lastPrice: number): Promise<any>{
+    return await repository.findPreDefinitions(lastPrice)
   }
   async update(id: number, data: IUserBotConfigUpdate) {
     if (data.password) {

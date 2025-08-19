@@ -1,11 +1,12 @@
 import { IPrice } from '@/interfaces/Price';
 import { BroomService } from './broomService';
-import { ETradingStatus, INewTrade, IOpenTrade } from '@/interfaces/Trading';
+import { ETradingStatus, INewTrade } from '@/interfaces/Trading';
 import { TradingService } from './tradingService';
 import { ClientService } from './clientService';
 import { RedisClientProvider } from '@/config/redis';
 import { RedisRepository } from '@/repository/redisRepository';
 import { RedisService } from './redisService';
+import { IUserBorService } from '@/interfaces/UserBot';
 
 export abstract class MonitorService {
   static async monitorHangingOrders(
@@ -44,12 +45,12 @@ export abstract class MonitorService {
       console.log(error);
     }
   }
-  static async monitorPreDefinition(currentPrice: IPrice, hangingOrderService: BroomService) {
-    const preDefinitions = await hangingOrderService.getPreDefinitions(currentPrice.lastPrice);
+  static async monitorPreDefinition(currentPrice: IPrice, userBotService: IUserBorService, hangingOrderService: BroomService) {
+    const preDefinitions = await userBotService.getPredefinitions(currentPrice.lastPrice);
 
     if (!preDefinitions.length) return;
     // Gera todas as ordens em memória
-    const allTrades = preDefinitions.flatMap((preDef) => {
+    const allTrades = preDefinitions.flatMap((preDef: any) => {
       const trades: INewTrade[] = [];
       for (
         let price = preDef.evenNegative + preDef.variation;
@@ -57,7 +58,7 @@ export abstract class MonitorService {
         price += preDef.variation
       ) {
         trades.push({
-          userId: preDef.userId,
+          userId: preDef.id,
           type: 'l',
           side: preDef.side,
           leverage: preDef.leverage,
@@ -68,7 +69,6 @@ export abstract class MonitorService {
       return trades;
     });
     await hangingOrderService.saveManyTrades(allTrades);
-    await hangingOrderService.deleteManyPredenitions(preDefinitions);
     return;
   }
   static async monitorMarginProtection(currentPrice: IPrice, hangingOrderService: BroomService) {

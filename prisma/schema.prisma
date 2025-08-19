@@ -39,6 +39,7 @@ model UserBotConfig {
   balance            Int?
   profitPercentage   Float?
   from               Float?
+  side               String?
   evenPositive       Float?
   evenNegative       Float?
 

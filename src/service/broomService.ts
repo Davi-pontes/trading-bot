@@ -1,7 +1,8 @@
+import { IBroomService } from '@/interfaces/Broom';
 import { RedisService } from './redisService';
 import { ETradingStatus, INewTrade, IOpenTrade, IPreDefinition } from '@/interfaces/Trading';
 
-export class BroomService {
+export class BroomService implements IBroomService{
   constructor(private redisService: RedisService) {}
 
   async getOrdersByPrice(price: number): Promise<INewTrade[]> {

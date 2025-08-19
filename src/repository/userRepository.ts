@@ -1,4 +1,9 @@
-import { ICreateUserBot, IUserAccountBalance, IUserBotConfigUpdate, IUserSettingsTrading } from '@/interfaces/UserBot';
+import {
+  ICreateUserBot,
+  IUserAccountBalance,
+  IUserBotConfigUpdate,
+  IUserSettingsTrading,
+} from '@/interfaces/UserBot';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -33,6 +38,29 @@ export class UserBotConfigRepository {
       },
       where: {
         id: userId,
+      },
+    });
+  }
+
+  async findPreDefinitions(lastPrice: number): Promise<any> {
+    return await prisma.userBotConfig.findMany({
+      select: {
+        id: true,
+        quantity: true,
+        variation: true,
+        leverage: true,
+        balance: true,
+        profitPercentage: true,
+        from: true,
+        side: true,
+        evenPositive: true,
+        evenNegative: true,
+      },
+      where: {
+        from: {
+          gte: lastPrice - 50,
+          lte: lastPrice + 50,
+        },
       },
     });
   }

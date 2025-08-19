@@ -12,6 +12,7 @@ import { setupSocket } from './sockets';
 import RabbitMQ from './config/amqp';
 import { router } from './routes';
 import { env } from './config/env';
+import { UserBotConfigService } from './service/userBotService';
 
 export class App {
   public readonly app: Application;
@@ -34,7 +35,7 @@ export class App {
     this.setupSockets();
     await this.setupRedis();
     await this.setupRabbitmq();
-    await this.subscribeToLastPriceTeste()
+    await this.subscribeToLastPriceTeste();
     //await this.subscribeToLastPrice();
   }
 
@@ -78,19 +79,21 @@ export class App {
 
   private async subscribeToLastPriceTeste(): Promise<void> {
     const broomService = new BroomService(this.redisService);
+    const userBotService = new UserBotConfigService();
     const data = {
-      lastPrice: 114000,
+      lastPrice: 118000,
       lastTickDirection: '',
       time: 'string',
     };
 
-    await MonitorService.monitorHangingOrders(data, broomService);
+    await MonitorService.monitorPreDefinition(data, userBotService ,broomService);
   }
 
   private async subscribeToLastPrice(): Promise<void> {
     const trading = await PriceService.connection();
 
     const broomService = new BroomService(this.redisService);
+    const userBotService = new UserBotConfigService();
     console.log('✅ Get last price completed.');
 
     const channel = RabbitMQ.getChannel();
@@ -107,7 +110,7 @@ export class App {
           try {
             const data = JSON.parse(msg.content.toString());
             await MonitorService.monitorHangingOrders(data, broomService);
-            await MonitorService.monitorPreDefinition(data, broomService);
+            await MonitorService.monitorPreDefinition(data, userBotService, broomService);
             await MonitorService.monitorMarginProtection(data, broomService);
             channel.ack(msg);
           } catch (err) {

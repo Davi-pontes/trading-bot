@@ -55,9 +55,28 @@ export interface IUserCredentials {
   secret: string;
   passphrase: string;
 }
-export interface IUserAccountBalance{
-  accountBalance: number
-  availableAccountBalance: number
+export interface IUserAccountBalance {
+  accountBalance: number;
+  availableAccountBalance: number;
+}
+export interface IUserBorService {
+  create(configData: ICreateUserBot): Promise<any>;
+  getAll(): Promise<Array<any>>;
+  getById(id: number): Promise<ICreateUserBot>;
+  getTradingSettingsByUserId(userId: number): Promise<IUserSettingsTrading>;
+  getPredefinitions(lastPrice: number): Promise<any>;
+  update(id: number, data: IUserBotConfigUpdate): Promise<any>;
+  decrementAccountBalance(
+    balanceOld: IUserAccountBalance,
+    decrement: number,
+    userId: number,
+  ): Promise<any>;
+  incrementAvailableAccountBalance(
+    balanceOld: IUserAccountBalance,
+    decrement: number,
+    userId: number,
+  ): Promise<any>;
+  delete(id: number): Promise<any>;
 }
 export type IUserBotConfigCreate = IUserBotConfigBase;
 
