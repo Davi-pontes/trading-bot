@@ -114,6 +114,35 @@ export class RedisService {
       return error;
     }
   }
+  async getOrdersByUserId(userId: number) {
+    try {
+      const pattern = `*:*:*:${userId}`;
+      const keys = await this.repository.scanKeys(pattern);
+
+      if (!keys.length) return [];
+
+      const values = await this.repository.mGet(keys);
+
+      const parsed = values
+        .map((val, index) => {
+          if (typeof val !== 'string') return null;
+
+          try {
+            const trade = JSON.parse(val);
+            return { ...trade, userId };
+          } catch (error) {
+            console.error('Valor inválido no Redis', val);
+            return null;
+          }
+        })
+        .filter((item) => item !== null);
+
+      return parsed;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
   async updateTradeStatus(
     trade: INewTrade | IOpenTrade,
     oldStatus: ETradingStatus,

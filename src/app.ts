@@ -30,12 +30,12 @@ export class App {
   }
 
   private async initialize(): Promise<void> {
+    await this.setupRedis();
+    await this.setupRabbitmq();
     this.setupMiddlewares();
     this.setupRoutes();
     this.setupSockets();
-    await this.setupRedis();
-    await this.setupRabbitmq();
-    await this.subscribeToLastPriceTeste();
+    //await this.subscribeToLastPriceTeste();
     //await this.subscribeToLastPrice();
   }
 

@@ -7,6 +7,7 @@ import { RedisClientProvider } from '@/config/redis';
 import { RedisRepository } from '@/repository/redisRepository';
 import { RedisService } from './redisService';
 import { IUserBorService } from '@/interfaces/UserBot';
+import { IBroomService } from '@/interfaces/Broom';
 
 export abstract class MonitorService {
   static async monitorHangingOrders(
@@ -71,7 +72,7 @@ export abstract class MonitorService {
     await hangingOrderService.saveManyTrades(allTrades);
     return;
   }
-  static async monitorMarginProtection(currentPrice: IPrice, hangingOrderService: BroomService) {
+  static async monitorMarginProtection(currentPrice: IPrice, hangingOrderService: IBroomService) {
     const allOrdersOpen = await hangingOrderService.getOpenOrders();
 
     if (!allOrdersOpen.length) return;
