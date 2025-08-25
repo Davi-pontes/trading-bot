@@ -9,6 +9,8 @@ import {
   IUserSettingsTrading,
 } from '../interfaces/UserBot';
 import { Calculate } from './calculate';
+import { ClientService } from './clientService';
+import { TradingApiGateway } from '@/integration/tradingApiGateway';
 
 const repository = new UserBotConfigRepository();
 
@@ -26,6 +28,27 @@ export class UserBotConfigService implements IUserBorService {
     return repository.findAll();
   }
 
+  async getUserLnMarket(): Promise<Array<any>> {
+    try {
+      const allUser = await repository.findAll();
+      const usersInLnMarket = [];
+      for (const user of allUser) {
+        const client = await ClientService.clientAuthentic({
+          key: user.key,
+          passphrase: user.passphrase,
+          secret: user.secret,
+        });
+        const lnInformationUser = await TradingApiGateway.userGet(client);
+        usersInLnMarket.push({ ...lnInformationUser, userId: user.id });
+      }
+
+      return usersInLnMarket;
+    } catch (error: any) {
+      console.log(error);
+      throw new Error(error);
+    }
+  }
+
   async getById(id: number): Promise<ICreateUserBot> {
     const config = await repository.findByUserId(id);
     if (!config) throw new Error('Configuração não encontrada');
@@ -39,8 +62,8 @@ export class UserBotConfigService implements IUserBorService {
 
     return credentials;
   }
-  async getPredefinitions(lastPrice: number): Promise<any>{
-    return await repository.findPreDefinitions(lastPrice)
+  async getPredefinitions(lastPrice: number): Promise<any> {
+    return await repository.findPreDefinitions(lastPrice);
   }
   async update(id: number, data: IUserBotConfigUpdate) {
     if (data.password) {
@@ -79,5 +102,18 @@ export class UserBotConfigService implements IUserBorService {
   }
   async delete(id: number) {
     return repository.delete(id);
+  }
+  async updateBalanceAllUser(allUserData: Array<any>): Promise<void> {
+    try {
+      for (const user of allUserData) {
+        const data: IUserAccountBalance = {
+          accountBalance: user.balance,
+          availableAccountBalance: user.balance / 2,
+        };
+        await repository.updateAccountBalance(data, user.userId);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   }
 }

@@ -30,3 +30,23 @@ export interface IAuthenticatedClient {
   optionsCloseAllTrades: Function;
   optionsUpdateSettlement: Function;
 }
+export interface IUserLnMarket{
+  uid: string,
+  role: string,
+  balance: number,
+  username: string,
+  login: string,
+  synthetic_usd_balance: number,
+  linkingpublickey: string,
+  show_leaderboard: boolean,
+  email: string,
+  email_confirmed: boolean,
+  use_taproot_addresses: boolean,
+  account_type: string,
+  auto_withdraw_enabled: boolean,
+  auto_withdraw_lightning_address: string,
+  totp_enabled: boolean,
+  webauthn_enabled: boolean,
+  fee_tier: number,
+  locale: string
+}

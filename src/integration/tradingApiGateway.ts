@@ -64,4 +64,12 @@ export abstract class TradingApiGateway {
       return error;
     }
   }
+  static async userGet(client: IAuthenticatedClient) {
+    try {
+      return await client.userGet();
+    } catch (error) {
+      console.log(error);
+      return error;
+    }
+  }
 }

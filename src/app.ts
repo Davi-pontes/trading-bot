@@ -13,6 +13,7 @@ import RabbitMQ from './config/amqp';
 import { router } from './routes';
 import { env } from './config/env';
 import { UserBotConfigService } from './service/userBotService';
+import { SynchronizrData } from './service/synchronizeDatas';
 
 export class App {
   public readonly app: Application;
@@ -35,6 +36,7 @@ export class App {
     this.setupMiddlewares();
     this.setupRoutes();
     this.setupSockets();
+    await this.syncDatas();
     //await this.subscribeToLastPriceTeste();
     //await this.subscribeToLastPrice();
   }
@@ -76,17 +78,13 @@ export class App {
 
     await channel.assertQueue(queue, { durable: true });
   }
-
+  private async syncDatas() {
+    await SynchronizrData.syncUserBalances();
+    console.log('✅ Data synchronization successful.');
+  }
   private async subscribeToLastPriceTeste(): Promise<void> {
-    const broomService = new BroomService(this.redisService);
     const userBotService = new UserBotConfigService();
-    const data = {
-      lastPrice: 118000,
-      lastTickDirection: '',
-      time: 'string',
-    };
-
-    await MonitorService.monitorPreDefinition(data, userBotService ,broomService);
+    userBotService.getUserLnMarket();
   }
 
   private async subscribeToLastPrice(): Promise<void> {
