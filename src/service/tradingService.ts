@@ -138,6 +138,13 @@ export class TradingService {
       return error;
     }
   }
+  public async getTradingOpenUser(client: any){
+    try {
+     return await TradingApiGateway.futuresGetTrades(client,ETradingStatus.open)
+    } catch (error) {
+      console.error(error);
+    }
+  }
   private calculateTakeProfit(price: number, profitPercentage: number | null): number {
     if (profitPercentage) {
       if (!price) return profitPercentage;

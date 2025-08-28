@@ -4,13 +4,13 @@ import {
   ICreateUserBot,
   IUserAccountBalance,
   IUserBorService,
-  IUserBotConfigCreate,
   IUserBotConfigUpdate,
   IUserSettingsTrading,
 } from '../interfaces/UserBot';
 import { Calculate } from './calculate';
 import { ClientService } from './clientService';
 import { TradingApiGateway } from '@/integration/tradingApiGateway';
+import { TradingService } from './tradingService';
 
 const repository = new UserBotConfigRepository();
 
@@ -28,7 +28,7 @@ export class UserBotConfigService implements IUserBorService {
     return repository.findAll();
   }
 
-  async getUserLnMarket(): Promise<Array<any>> {
+  async getDataUserLnMarket(): Promise<Array<any>> {
     try {
       const allUser = await repository.findAll();
       const usersInLnMarket = [];
@@ -48,7 +48,21 @@ export class UserBotConfigService implements IUserBorService {
       throw new Error(error);
     }
   }
-
+  async getUserTradings(userId: number): Promise<Array<any>> {
+    try {
+      const user = await repository.findByUserId(userId);
+      const client = await ClientService.clientAuthentic({
+        key: user.key,
+        passphrase: user.passphrase,
+        secret: user.secret,
+      });
+      const tradingService = new TradingService();
+      return await tradingService.getTradingOpenUser(client);
+    } catch (error: any) {
+      console.error(error);
+      return error;
+    }
+  }
   async getById(id: number): Promise<ICreateUserBot> {
     const config = await repository.findByUserId(id);
     if (!config) throw new Error('Configuração não encontrada');
@@ -108,7 +122,7 @@ export class UserBotConfigService implements IUserBorService {
       for (const user of allUserData) {
         const data: IUserAccountBalance = {
           accountBalance: user.balance,
-          availableAccountBalance: user.balance / 2,
+          availableAccountBalance: user.balance == 0 ? 0 : user.balance / 2,
         };
         await repository.updateAccountBalance(data, user.userId);
       }

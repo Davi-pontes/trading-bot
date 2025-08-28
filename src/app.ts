@@ -84,7 +84,7 @@ export class App {
   }
   private async subscribeToLastPriceTeste(): Promise<void> {
     const userBotService = new UserBotConfigService();
-    userBotService.getUserLnMarket();
+    userBotService.getDataUserLnMarket();
   }
 
   private async subscribeToLastPrice(): Promise<void> {
