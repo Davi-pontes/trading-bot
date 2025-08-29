@@ -138,11 +138,12 @@ export class TradingService {
       return error;
     }
   }
-  public async getTradingOpenUser(client: any){
+  public async getTradingRunningUser(client: any): Promise<IOpenTrade[]>{
     try {
-     return await TradingApiGateway.futuresGetTrades(client,ETradingStatus.open)
-    } catch (error) {
+     return await TradingApiGateway.futuresGetTrades(client,ETradingStatus.running)
+    } catch (error: any) {
       console.error(error);
+      return error
     }
   }
   private calculateTakeProfit(price: number, profitPercentage: number | null): number {

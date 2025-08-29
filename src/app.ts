@@ -79,7 +79,9 @@ export class App {
     await channel.assertQueue(queue, { durable: true });
   }
   private async syncDatas() {
+    const clientRedis = RedisClientProvider.getClient()
     await SynchronizrData.syncUserBalances();
+    await SynchronizrData.syncTrandingAllUsers(clientRedis);
     console.log('✅ Data synchronization successful.');
   }
   private async subscribeToLastPriceTeste(): Promise<void> {

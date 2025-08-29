@@ -20,11 +20,11 @@ export class RedisService {
     const value = JSON.stringify(preDefinitiion);
     await this.repository.set(key, value);
   }
-  async saveManyTrades(trades: INewTrade[], status: string = 'pending'): Promise<void> {
+  async saveManyTrades(trades: INewTrade[] | IOpenTrade[], status: string = 'pending'): Promise<void> {
     if (!trades.length) return;
 
     const entries = trades.map((trade) => ({
-      key: `${trade.price}:${status}:${trade.side}:${trade.userId}`,
+      key: `${trade.price}:${status}:${trade.side}:${trade.userId}:${trade.id}`,
       value: JSON.stringify(trade),
     }));
 
@@ -177,5 +177,13 @@ export class RedisService {
   }
   async deletePreDefinition(preDefinitionKey: string): Promise<void> {
     await this.repository.del(preDefinitionKey);
+  }
+  async deleteTradingRunningTheUser(userId: number): Promise<void> {
+    const pattern = `*:running:*:${userId}:*`;
+    const keys = await this.repository.scanKeys(pattern);
+
+    if (!keys.length) return;
+
+    await Promise.all(keys.map((key) => this.repository.del(key)));
   }
 }

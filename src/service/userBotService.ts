@@ -4,6 +4,8 @@ import {
   ICreateUserBot,
   IUserAccountBalance,
   IUserBorService,
+  IUserBotConfig,
+  IUserBotConfigBase,
   IUserBotConfigUpdate,
   IUserSettingsTrading,
 } from '../interfaces/UserBot';
@@ -11,6 +13,7 @@ import { Calculate } from './calculate';
 import { ClientService } from './clientService';
 import { TradingApiGateway } from '@/integration/tradingApiGateway';
 import { TradingService } from './tradingService';
+import { IOpenTrade } from '@/interfaces/Trading';
 
 const repository = new UserBotConfigRepository();
 
@@ -48,19 +51,24 @@ export class UserBotConfigService implements IUserBorService {
       throw new Error(error);
     }
   }
-  async getUserTradings(userId: number): Promise<Array<any>> {
+  async getUserTradings(user: IUserBotConfig): Promise<IOpenTrade[]> {
     try {
-      const user = await repository.findByUserId(userId);
       const client = await ClientService.clientAuthentic({
         key: user.key,
         passphrase: user.passphrase,
         secret: user.secret,
       });
+
       const tradingService = new TradingService();
-      return await tradingService.getTradingOpenUser(client);
+      const tradingUser = await tradingService.getTradingRunningUser(client);
+
+      return tradingUser.map((value: IOpenTrade) => ({
+        ...value,
+        userId: user.id,
+      }));
     } catch (error: any) {
       console.error(error);
-      return error;
+      return [];
     }
   }
   async getById(id: number): Promise<ICreateUserBot> {
