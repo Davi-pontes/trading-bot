@@ -8,6 +8,8 @@ import { RedisRepository } from '@/repository/redisRepository';
 import { RedisService } from './redisService';
 import { IUserBorService } from '@/interfaces/UserBot';
 import { IBroomService } from '@/interfaces/Broom';
+import { validatorRiskThresHold } from '@/utils/validators/validatorRiskThresHold';
+import { UserBotConfigService } from './userBotService';
 
 export abstract class MonitorService {
   static async monitorHangingOrders(
@@ -29,7 +31,7 @@ export abstract class MonitorService {
         await hangingOrderService.updateOrderStatus(
           order,
           ETradingStatus.pending,
-          ETradingStatus.running,
+          ETradingStatus.open,
           order.userId,
         );
       }
@@ -46,7 +48,11 @@ export abstract class MonitorService {
       console.log(error);
     }
   }
-  static async monitorPreDefinition(currentPrice: IPrice, userBotService: IUserBorService, hangingOrderService: BroomService) {
+  static async monitorPreDefinition(
+    currentPrice: IPrice,
+    userBotService: IUserBorService,
+    hangingOrderService: BroomService,
+  ) {
     const preDefinitions = await userBotService.getPredefinitions(currentPrice.lastPrice);
 
     if (!preDefinitions.length) return;
@@ -72,28 +78,35 @@ export abstract class MonitorService {
     await hangingOrderService.saveManyTrades(allTrades);
     return;
   }
-  static async monitorMarginProtection(currentPrice: IPrice, hangingOrderService: IBroomService) {
-    const allOrdersOpen = await hangingOrderService.getOpenOrders();
+  static async monitorProtection(currentPrice: IPrice, hangingOrderService: IBroomService) {
+    const allTradingsRunning = await hangingOrderService.getRunningOrders();
 
-    if (!allOrdersOpen.length) return;
+    if (!allTradingsRunning.length) return;
 
-    for (let orderOpen of allOrdersOpen) {
-      if (orderOpen.userId) {
-        const liquidationPrice = orderOpen.liquidation;
-        const distancePrice = currentPrice.lastPrice - liquidationPrice;
-        const riskThreshold = ClientService.getRiskThreshold(orderOpen.userId);
-        if (distancePrice <= riskThreshold) {
-          console.log(`⚠️ Ordem ${orderOpen.id} próxima de liquidação. Injetando margem...`);
+    for (let tradingRunning of allTradingsRunning) {
+      if (tradingRunning.userId) {
+        const userService = new UserBotConfigService()
+        const userDataProtection = userService.getDataProtectionUser(tradingRunning.userId)
+        const injecteMargin = validatorRiskThresHold(
+          tradingRunning.liquidation,
+          currentPrice.lastPrice,
+          userDataProtection.riskThreshold,
+        );
+        if (injecteMargin) {
+          console.log(`⚠️ Ordem ${tradingRunning.id} próxima de liquidação. Injetando margem...`);
           const tradingService = new TradingService();
           try {
-            const addedMargin = await tradingService.addMarginTrade(orderOpen, orderOpen.userId);
+            const addedMargin = await tradingService.addMarginTrade(
+              tradingRunning,
+              tradingRunning.userId,
+            );
             const redisClient = RedisClientProvider.getClient();
 
             const repository = new RedisRepository(redisClient);
 
             const redisService = new RedisService(repository);
 
-            redisService.saveTrade(addedMargin, ETradingStatus.open, orderOpen.userId);
+            redisService.saveTrade(addedMargin, ETradingStatus.open, tradingRunning.userId);
           } catch (error) {
             console.error(error);
           }

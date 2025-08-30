@@ -30,6 +30,7 @@ model UserBotConfig {
   accessLevel                 AccessLevel @default(USER)
   accountBalance              Float?
   availableAccountBalance     Float?
+  stopGain                    Float?
 
   riskThreshold      Int?
   amountForSetMargin Float?
@@ -42,6 +43,7 @@ model UserBotConfig {
   side               String?
   evenPositive       Float?
   evenNegative       Float?
+  preDefinitionStatus Boolean?
 
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt

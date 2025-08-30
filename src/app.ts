@@ -86,7 +86,7 @@ export class App {
   }
   private async subscribeToLastPriceTeste(): Promise<void> {
     const userBotService = new UserBotConfigService();
-    userBotService.getDataUserLnMarket();
+    userBotService.getDataAllUserLnMarket();
   }
 
   private async subscribeToLastPrice(): Promise<void> {
@@ -111,7 +111,7 @@ export class App {
             const data = JSON.parse(msg.content.toString());
             await MonitorService.monitorHangingOrders(data, broomService);
             await MonitorService.monitorPreDefinition(data, userBotService, broomService);
-            await MonitorService.monitorMarginProtection(data, broomService);
+            await MonitorService.monitorProtection(data, broomService);
             channel.ack(msg);
           } catch (err) {
             console.error('Erro no processamento da mensagem', err);

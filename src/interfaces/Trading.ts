@@ -68,6 +68,8 @@ export interface IOpenTrade {
   canceled: boolean;
   closed: boolean;
   sum_carry_fees: number;
+  stopGain: number;
+  statusstopGain:number
 }
 
 export interface IPreDefinition {

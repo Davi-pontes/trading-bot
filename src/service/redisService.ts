@@ -57,9 +57,9 @@ export class RedisService {
       return error;
     }
   }
-  async getOpenOrders(): Promise<IOpenTrade[]> {
+  async getRunningOrders(): Promise<IOpenTrade[]> {
     try {
-      const pattern = `*:open:*`;
+      const pattern = `*:running:*`;
       const keys = await this.repository.scanKeys(pattern);
 
       if (!keys.length) return [];

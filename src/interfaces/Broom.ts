@@ -2,7 +2,7 @@ import { ETradingStatus, INewTrade, IOpenTrade, IPreDefinition } from './Trading
 
 export interface IBroomService {
   getOrdersByPrice(price: number): Promise<INewTrade[]>;
-  getOpenOrders(): Promise<IOpenTrade[]>;
+  getRunningOrders(): Promise<IOpenTrade[]>;
   getPreDefinitions(price: number): Promise<IPreDefinition[]>;
   updateOrderStatus(
     trade: INewTrade | IOpenTrade,

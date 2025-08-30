@@ -8,8 +8,8 @@ export class BroomService implements IBroomService{
   async getOrdersByPrice(price: number): Promise<INewTrade[]> {
     return await this.redisService.getTradesByPrice(price);
   }
-  async getOpenOrders(): Promise<IOpenTrade[]> {
-    return await this.redisService.getOpenOrders();
+  async getRunningOrders(): Promise<IOpenTrade[]> {
+    return await this.redisService.getRunningOrders();
   }
   async getPreDefinitions(price: number): Promise<IPreDefinition[]> {
     return await this.redisService.getPreDefinitionTrades(price);

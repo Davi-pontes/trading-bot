@@ -31,24 +31,39 @@ export class UserBotConfigService implements IUserBorService {
     return repository.findAll();
   }
 
-  async getDataUserLnMarket(): Promise<Array<any>> {
+  async getDataAllUserLnMarket(): Promise<Array<any>> {
     try {
       const allUser = await repository.findAll();
       const usersInLnMarket = [];
       for (const user of allUser) {
-        const client = await ClientService.clientAuthentic({
-          key: user.key,
-          passphrase: user.passphrase,
-          secret: user.secret,
-        });
-        const lnInformationUser = await TradingApiGateway.userGet(client);
+        const lnInformationUser = this.getDataUserLnMarket(user);
+
         usersInLnMarket.push({ ...lnInformationUser, userId: user.id });
       }
-
       return usersInLnMarket;
     } catch (error: any) {
       console.log(error);
       throw new Error(error);
+    }
+  }
+  async getDataUserLnMarket(user: any) {
+    try {
+      const client = await ClientService.clientAuthentic({
+        key: user.key,
+        passphrase: user.passphrase,
+        secret: user.secret,
+      });
+      return await TradingApiGateway.userGet(client);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  async getDataProtectionUser(userId: number): Promise<any>{
+    try {
+      return await repository.findDataProtection(userId)
+    } catch (error) {
+      console.error(error);
+      
     }
   }
   async getUserTradings(user: IUserBotConfig): Promise<IOpenTrade[]> {
@@ -76,7 +91,6 @@ export class UserBotConfigService implements IUserBorService {
     if (!config) throw new Error('Configuração não encontrada');
     return config;
   }
-
   async getTradingSettingsByUserId(userId: number): Promise<IUserSettingsTrading> {
     const credentials = await repository.findTradingSettingsByUserId(userId);
 
@@ -128,14 +142,21 @@ export class UserBotConfigService implements IUserBorService {
   async updateBalanceAllUser(allUserData: Array<any>): Promise<void> {
     try {
       for (const user of allUserData) {
-        const data: IUserAccountBalance = {
-          accountBalance: user.balance,
-          availableAccountBalance: user.balance == 0 ? 0 : user.balance / 2,
-        };
-        await repository.updateAccountBalance(data, user.userId);
+        await this.updateBalanceUSer(user);
       }
     } catch (error) {
       console.log(error);
+    }
+  }
+  async updateBalanceUSer(user: any) {
+    try {
+      const data: IUserAccountBalance = {
+        accountBalance: user.balance,
+        availableAccountBalance: user.balance == 0 ? 0 : user.balance / 2,
+      };
+      await repository.updateAccountBalance(data, user.userId);
+    } catch (error) {
+      console.error(error);
     }
   }
 }

@@ -49,6 +49,7 @@ export interface IUserSettingsTrading {
   evenNegative: number | null;
   accountBalance: number | null;
   availableAccountBalance: number | null;
+  stopGain: number | null;
 }
 export interface IUserCredentials {
   key: string;

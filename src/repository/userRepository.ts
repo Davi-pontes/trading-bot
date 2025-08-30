@@ -35,6 +35,7 @@ export class UserBotConfigRepository {
         evenNegative: true,
         accountBalance: true,
         availableAccountBalance: true,
+        stopGain: true,
       },
       where: {
         id: userId,
@@ -61,6 +62,7 @@ export class UserBotConfigRepository {
           gte: lastPrice - 50,
           lte: lastPrice + 50,
         },
+        preDefinitionStatus: true,
       },
     });
   }
@@ -68,7 +70,18 @@ export class UserBotConfigRepository {
   async findByUserId(userId: number) {
     return prisma.userBotConfig.findUnique({ where: { id: userId } });
   }
-
+  async findDataProtection(userId: number) {
+    return prisma.userBotConfig.findUnique({
+      select: {
+        riskThreshold: true,
+        stopGain: true,
+        amountForSetMargin: true,
+      },
+      where: {
+        id: userId,
+      },
+    });
+  }
   async update(userId: number, data: IUserBotConfigUpdate) {
     return prisma.userBotConfig.update({
       where: { id: userId },

@@ -4,7 +4,7 @@ import { TradingApiGateway } from '@/integration/tradingApiGateway';
 import { BroomService } from './broomService';
 import { UserBotConfigService } from './userBotService';
 import { validateCredentials } from '@/utils/validators/validatorCredentials';
-import { formatOrder } from '@/utils/formatters/orderFormatter';
+import { formatTradingLnMarket, formatTradingRedis } from '@/utils/formatters/tradingFormatter';
 import { Calculate } from './calculate';
 import { validateavailableAccountBalance as validateAvailableAccountBalance } from '@/utils/validators/validatorBalance';
 
@@ -25,14 +25,14 @@ export class TradingService {
               order.price,
               userSettingsTrading.profitPercentage,
             );
-            const formatedOrder = formatOrder(order, takeprofit);
+            const formatedOrder = formatTradingLnMarket(order, takeprofit);
 
             const orderMargin = Calculate.calculateMargin(order);
 
             const validateAvailableBalance = validateAvailableAccountBalance(
               userSettingsTrading.accountBalance,
               userSettingsTrading.availableAccountBalance,
-              orderMargin.usd,
+              orderMargin.btc,
             );
 
             if (validateAvailableBalance) {
@@ -41,7 +41,8 @@ export class TradingService {
                   client,
                   formatedOrder,
                 );
-                console.log(createdOrder);
+                const formatedTradingRedis = formatTradingRedis(createdOrder,userSettingsTrading)
+
                 const accountBalanceOld = {
                   accountBalance: userSettingsTrading.accountBalance as number,
                   availableAccountBalance: userSettingsTrading.availableAccountBalance as number,
@@ -53,9 +54,9 @@ export class TradingService {
                   order.userId,
                 );
                 await hangingOrderService.updateOrder(
-                  createdOrder,
-                  ETradingStatus.running,
+                  formatedTradingRedis,
                   ETradingStatus.open,
+                  ETradingStatus.running,
                   order.userId,
                 );
               } catch (error) {
