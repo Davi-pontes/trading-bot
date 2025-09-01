@@ -8,7 +8,10 @@ import { RedisRepository } from '@/repository/redisRepository';
 import { RedisService } from './redisService';
 import { IUserBorService } from '@/interfaces/UserBot';
 import { IBroomService } from '@/interfaces/Broom';
-import { validatorRiskThresHold } from '@/utils/validators/validatorRiskThresHold';
+import {
+  validatorPricePassedStopGain,
+  validatorRiskThresHold,
+} from '@/utils/validators/validatorRiskThresHold';
 import { UserBotConfigService } from './userBotService';
 
 export abstract class MonitorService {
@@ -85,8 +88,24 @@ export abstract class MonitorService {
 
     for (let tradingRunning of allTradingsRunning) {
       if (tradingRunning.userId) {
-        const userService = new UserBotConfigService()
-        const userDataProtection = userService.getDataProtectionUser(tradingRunning.userId)
+        const userService = new UserBotConfigService();
+        const userDataProtection = userService.getDataProtectionUser(tradingRunning.userId);
+        if (tradingRunning.statusstopGain) {
+          const tradingService = new TradingService();
+          const canceledTrade = await tradingService.cancelTrade(
+            tradingRunning.userId,
+            tradingRunning.id,
+          );
+          console.log(canceledTrade);
+          continue;
+        }
+        const activateStopGain = validatorPricePassedStopGain(
+          currentPrice.lastPrice,
+          tradingRunning.stopGain,
+        );
+        if(activateStopGain){
+          
+        }
         const injecteMargin = validatorRiskThresHold(
           tradingRunning.liquidation,
           currentPrice.lastPrice,

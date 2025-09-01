@@ -1,4 +1,5 @@
 import { INewTrade } from '@/interfaces/Trading';
+import { Calculate } from '@/service/calculate';
 
 export function formatTradingLnMarket(data: any, value: number): INewTrade {
   const { userId, ...rest } = data;
@@ -15,7 +16,7 @@ export function formatTradingRedis(dataTrading: any, dataUser: any) {
   return {
     ...restTrading,
     userId: dataUser.userId,
-    stopGain: dataUser.stopGain,
-    statusStopGain: dataUser.userStatusStopGain,
+    stopGain: Calculate.calculateStopGain(dataTrading.price, dataUser.stopGain),
+    statusStopGain: false,
   };
 }

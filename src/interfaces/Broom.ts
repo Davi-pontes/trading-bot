@@ -10,7 +10,7 @@ export interface IBroomService {
     newStatus: ETradingStatus,
     userId: number,
   ): Promise<void>;
-  updateOrder(
+  updateTrading(
     trade: INewTrade | IOpenTrade,
     oldStatus: ETradingStatus,
     newStatus: ETradingStatus,

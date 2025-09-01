@@ -22,7 +22,7 @@ export class BroomService implements IBroomService{
   ): Promise<void> {
     return await this.redisService.updateTradeStatus(trade, oldStatus, newStatus, userId);
   }
-  async updateOrder(
+  async updateTrading(
     trade: INewTrade | IOpenTrade,
     oldStatus: ETradingStatus,
     newStatus: ETradingStatus,

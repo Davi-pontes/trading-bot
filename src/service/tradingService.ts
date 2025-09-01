@@ -53,7 +53,7 @@ export class TradingService {
                   orderMargin.usd,
                   order.userId,
                 );
-                await hangingOrderService.updateOrder(
+                await hangingOrderService.updateTrading(
                   formatedTradingRedis,
                   ETradingStatus.open,
                   ETradingStatus.running,
@@ -127,6 +127,7 @@ export class TradingService {
       const client = await ClientService.clientAuthentic(credential);
 
       const amountSetMargin = ClientService.getAmountForSetMargin(userId);
+
       const dataOrderSetMargin = {
         id: datas.id,
         amount: amountSetMargin,
@@ -137,6 +138,19 @@ export class TradingService {
     } catch (error: any) {
       console.warn(error);
       return error;
+    }
+  }
+  public async cancelTrade(userId: number, tradeId: string){
+    try {
+      const credential = ClientService.getCredentialsClient();
+
+      const client = await ClientService.clientAuthentic(credential);
+      
+      const tradingCanceled = await TradingApiGateway.futuresCancelTrade(client,tradeId)
+      
+      return tradingCanceled
+    } catch (error) {
+      console.error(error);
     }
   }
   public async getTradingRunningUser(client: any): Promise<IOpenTrade[]>{

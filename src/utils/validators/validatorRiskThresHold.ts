@@ -8,3 +8,8 @@ export function validatorRiskThresHold(
   if (distancePrice <= riskThreshold) return true;
   else return false;
 }
+
+export function validatorPricePassedStopGain(lastPrice: number, stopGain: number) {
+  if (lastPrice > stopGain) return true;
+  else return false;
+}

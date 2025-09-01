@@ -21,4 +21,7 @@ export abstract class Calculate {
     const newValue = value + incrementValue
     return Number(newValue.toFixed(2))
   }
+  static calculateStopGain(price: number, stopGain: number){
+    return price + stopGain
+  }
 }
