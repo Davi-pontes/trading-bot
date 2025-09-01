@@ -69,7 +69,7 @@ export interface IOpenTrade {
   closed: boolean;
   sum_carry_fees: number;
   stopGain: number;
-  statusstopGain:number
+  statusStopGain:boolean
 }
 
 export interface IPreDefinition {

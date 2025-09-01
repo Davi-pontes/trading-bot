@@ -86,11 +86,17 @@ export abstract class MonitorService {
 
     if (!allTradingsRunning.length) return;
 
+    const redisClient = RedisClientProvider.getClient();
+
+    const repository = new RedisRepository(redisClient);
+
+    const redisService = new RedisService(repository);
+
     for (let tradingRunning of allTradingsRunning) {
       if (tradingRunning.userId) {
         const userService = new UserBotConfigService();
         const userDataProtection = userService.getDataProtectionUser(tradingRunning.userId);
-        if (tradingRunning.statusstopGain) {
+        if (tradingRunning.statusStopGain) {
           const tradingService = new TradingService();
           const canceledTrade = await tradingService.cancelTrade(
             tradingRunning.userId,
@@ -103,8 +109,8 @@ export abstract class MonitorService {
           currentPrice.lastPrice,
           tradingRunning.stopGain,
         );
-        if(activateStopGain){
-          
+        if (activateStopGain) {
+          redisService.updateStatusStopGain(tradingRunning, ETradingStatus.running, tradingRunning.userId)
         }
         const injecteMargin = validatorRiskThresHold(
           tradingRunning.liquidation,
@@ -119,12 +125,6 @@ export abstract class MonitorService {
               tradingRunning,
               tradingRunning.userId,
             );
-            const redisClient = RedisClientProvider.getClient();
-
-            const repository = new RedisRepository(redisClient);
-
-            const redisService = new RedisService(repository);
-
             redisService.saveTrade(addedMargin, ETradingStatus.open, tradingRunning.userId);
           } catch (error) {
             console.error(error);

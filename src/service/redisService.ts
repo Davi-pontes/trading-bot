@@ -175,6 +175,19 @@ export class RedisService {
     await this.repository.set(newKey, value);
     await this.repository.del(oldKey);
   }
+  async updateStatusStopGain(
+    trade: IOpenTrade,
+    status: ETradingStatus,
+    userId: number,
+  ): Promise<void> {
+    trade.statusStopGain = true
+    
+    const key = `${trade.price}:${status}:${trade.side}:${userId}:${trade.id}`;
+
+    const value = JSON.stringify(trade);
+
+    await this.repository.set(key, value);
+  }
   async deletePreDefinition(preDefinitionKey: string): Promise<void> {
     await this.repository.del(preDefinitionKey);
   }
